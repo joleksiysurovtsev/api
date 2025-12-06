@@ -1,0 +1,44 @@
+BasicData:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 255
+      example: 'My resource'
+    internal_id:
+      type: integer
+      format: int64
+    description:
+      type: string
+      nullable: true
+      maxLength: 500
+      example: Descriptive information
+    status:
+      $ref: '#/components/schemas/Status'
+    provisioning_status:
+      $ref: '#/components/schemas/ProvisioningStatus'
+  required:
+    - name
+Status:
+  type: string
+  description: 'Status of the entity'
+  x-extensible-enum:
+    - DRAFT
+    - READY
+    - INVALID
+    - SUBMITTED
+    - OBSOLETE
+  example: READY
+ProvisioningStatus:
+  type: string
+  description: 'Provisioning status of the entity'
+  x-extensible-enum:
+    - NONE
+    - PENDING
+    - STARTED
+    - SUCCESS
+    - FAILURE
+  example: SUCCESS
+Empty:
+  type: string

@@ -1,0 +1,460 @@
+EnterprisesRead:
+  type: object
+  properties:
+    enterprises:
+      type: array
+      # maxItems: ?
+      items:
+        $ref: '#/components/schemas/EnterpriseRead'
+    other_enterprises_available:
+      type: boolean
+      description: 'Inform the user whether there are more enterprises to be displayed'
+      default: true
+EnterpriseRead:
+  type: object
+  properties:
+    id:
+      type: string
+      description: 'Enterprise ID.'
+      minLength: 3
+      maxLength: 255
+      example: 1.2.3.44
+    customer_number:
+      deprecated: true
+      type: string
+      description: 'Legacy identifier for the enterprise. API clients\n        should start transitioning to use id instead as the customer_number\n        will be removed. Date of removal is not yet known; notice will be\n        given at least 6 months before.'
+      minLength: 8
+      maxLength: 8
+      example: '02000044'
+    parent_number:
+      deprecated: true
+      type: string
+      description: 'Legacy identifier for the enterprise''s parent. API\n        clients should start transitioning to use id instead as the\n        parent_number will be removed, and id contains the parent ID. Date\n        of removal is not yet known; notice will be given at least 6 months\n        before.'
+      maxLength: 255
+      example: '02000001'
+    parent_id:
+      type: string
+      description: 'ID of the parent organization'
+      maxLength: 255
+      example: 1.2.3
+    name:
+      type: string
+      description: 'Enterprise name.'
+      minLength: 1
+      maxLength: 80
+      example: MyCompany
+    description:
+      type: string
+      nullable: true
+      description: 'Enterprise description.'
+      maxLength: 255
+      example: 'MyCompany description'
+    enterprise_type:
+      description: 'Type of the enterprise.'
+      type: string
+      x-extensible-enum:
+        - ENTERPRISE
+        - ADVANCED_RESELLER
+        - CONTROLLED_RESELLER
+      default: ENTERPRISE
+      example: ENTERPRISE
+    created_at:
+      type: string
+      description: 'The time when the enterprise was created (ISO 8601 UTC)'
+      example: '2019-06-28T00:00:00.000Z'
+    status:
+      $ref: '#/components/schemas/Status'
+    provisioning_status:
+      $ref: '#/components/schemas/ProvisioningStatus'
+    tags:
+      type: array
+      description: "A list of API consumer defined text strings that can be used to further describe an enterprise."
+      maxItems: 10
+      items:
+        type: string
+      example:
+        - 'business:finance'
+        - 'market:europe'
+    template_sp_id:
+      type: array
+      description: "A list of template subscription package id are used for an enterprise."
+      items:
+        type: integer
+        format: int64
+      example:
+        - '1231'
+        - '1232'
+  required:
+    - id
+    - parent_id
+    - name
+    - created_at
+    - status
+EnterpriseDetail:
+  allOf:
+    - $ref: '#/components/schemas/EnterpriseRead'
+    - properties:
+        agreement_number:
+          type: string
+          description: "Agreement number for the enterprise. Globally\n            unique and case sensitive. Numbers, letters, hyphen, dot and\n            underscore are allowed.\n\nCannot be changed once the enterprise\n            is created.\n"
+          minLength: 1
+          maxLength: 20
+          example: Abc_1234.5-6
+        vat_number:
+          type: string
+          nullable: true
+          description: 'Value Added Tax registration/identification number'
+          minLength: 4
+          maxLength: 30
+          example: FF-123/4.5
+        billing_address:
+          $ref: '#/components/schemas/Address'
+        billing_contacts:
+          type: array
+          description: 'Billing contact list'
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Address'
+        billing_country:
+          type: string
+          description: 'Country code identifying the country where billing is allowed, currently two-letter ISO format.'
+          minLength: 1
+          maxLength: 5
+          example: FI
+        enterprise_group_id:
+          type: string
+          description: 'ID of the enterprise group'
+          maxLength: 255
+          example: 0.1
+        tag_to_template_sp_map:
+          type: object
+          description: 'Map of tag to template subscription package id'
+          additionalProperties:
+            type: integer
+            format: int64
+        target_subscription_package_ids:
+          type: array
+          description: 'IDs of the target subscription packages. After acquisition, subscriptions will be moved to these target subscription packages.'
+          maxItems: 10
+          items:
+            type: integer
+            format: int64
+        sim_specification_ids:
+          type: array
+          description: 'Internal IDs of the SIM specifications this enterprise needs to use. Obtained from [GET/enterprises/sim-specifications]'
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: integer
+            format: int64
+        network_group_ids:
+          type: array
+          description: 'Internal IDs of the operator''s network groups this\n            enterprise is used in. Mandatory if operator has more than 1\n            network group. Obtained from [GET/enterprises/network-groups]'
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: integer
+            format: int64
+        euicc_specification_ids:
+          type: array
+          description: 'Internal IDs of the eUICC specifications this enterprise needs to use'
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: integer
+            format: int64
+        connectivity:
+          $ref: '#/components/schemas/Connectivity'
+        security_management:
+          description: 'Monitor device behaviour to recognize security events,\n            get alerts of suspicious behaviour and apply needed mitigation\n            actions to react to identified incidents.'
+          type: boolean
+          nullable: true
+          example: false
+        cellular_threat_detection_enabled:
+          type: boolean
+          example: false
+        volte_roaming_allowed:
+          type: boolean
+          example: false
+  required:
+    - name
+EnterpriseWrite:
+  type: object
+  properties:
+    name:
+      type: string
+      description: 'Enterprise name.'
+      minLength: 1
+      maxLength: 80
+      example: MyCompany
+    enterprise_type:
+      description: 'Type of the enterprise.'
+      type: string
+      x-extensible-enum:
+        - ENTERPRISE
+        - ADVANCED_RESELLER
+        - CONTROLLED_RESELLER
+      default: ENTERPRISE
+      example: ENTERPRISE
+    description:
+      type: string
+      nullable: true
+      description: 'Enterprise description.'
+      maxLength: 255
+      example: 'MyCompany description'
+    phone_number:
+      type: string
+      nullable: true
+      description: 'Enterprise phone number.'
+      maxLength: 50
+      example: +999-12-34567
+    tags:
+      type: array
+      description: "A list of API consumer defined text strings that can be used to further describe an enterprise."
+      maxItems: 10
+      items:
+        type: string
+      example:
+        - 'business:finance'
+        - 'market:europe'
+    contact_person:
+      type: string
+      description: 'Name of the contact person. Mandatory for billing address.'
+      minLength: 3
+      maxLength: 60
+      example: 'Firstname Lastname'
+    address:
+      $ref: '#/components/schemas/Address'
+    billing_address:
+      $ref: '#/components/schemas/Address'
+    billing_contacts:
+      type: array
+      description: 'Billing contact list'
+      maxItems: 100
+      items:
+        $ref: '#/components/schemas/Address'
+    billing_country:
+      type: string
+      description: 'Country code identifying the country where billing is allowed, currently two-letter ISO format.'
+      minLength: 1
+      maxLength: 5
+      example: FI
+    enterprise_group_id:
+      type: string
+      description: 'ID of the enterprise group'
+      maxLength: 255
+      example: 0.1
+    tag_to_template_sp_map:
+      type: object
+      description: 'Map of tag to template subscription package id'
+      additionalProperties:
+        type: integer
+        format: int64
+    connectivity:
+      $ref: '#/components/schemas/Connectivity'
+    target_subscription_package_ids:
+      type: array
+      description: 'IDs of the target subscription packages. After acquisition, subscriptions will be moved to these target subscription packages.'
+      maxItems: 10
+      items:
+        type: integer
+        format: int64
+    sim_specification_ids:
+      type: array
+      description: 'Internal IDs of the SIM specifications this enterprise needs to use. Obtained from [GET/enterprises/sim-specifications]'
+      maxItems: 100
+      uniqueItems: true
+      items:
+        type: integer
+        format: int64
+    network_group_ids:
+      type: array
+      description: 'Internal IDs of the operator''s network groups this enterprise is used in. Mandatory if operator has more than 1 network group. Obtained from [GET/enterprises/network-groups]'
+      maxItems: 100
+      uniqueItems: true
+      items:
+        type: integer
+        format: int64
+    euicc_specification_ids:
+      type: array
+      description: 'Internal IDs of the eUICC specifications this enterprise needs to use'
+      maxItems: 100
+      uniqueItems: true
+      items:
+        type: integer
+        format: int64
+    template_sp_id:
+      type: array
+      description: 'A list of template subscription package id are used for an enterprise.'
+      maxItems: 10
+      uniqueItems: true
+      items:
+        type: integer
+        format: int64
+      example:
+        - 1231
+        - 1232
+    target_onboarding_subscription_package_id:
+      type: integer
+      description: 'The ID of the target onboarding subscription package to be assigned to the entity'
+      format: int64
+      example: 1231
+    offering_id:
+      type: integer
+      description: 'The ID of the offering'
+      format: int64
+      example: 1234
+  required:
+    - name
+Connectivity:
+  type: object
+  description: Connectivity parameters.
+  properties:
+    sim_order_minimum:
+      type: integer
+      description: 'Minimum allowed number of SIMs in a SIM order.'
+      minimum: 0
+      maximum: 2147483647
+      example: 20
+    payment_terms:
+      type: integer
+      description: 'Number of days allowed for payment after the end of the billing cycle.'
+      minimum: 1
+      maximum: 90
+      example: 14
+    invoice_delivery_type:
+      description: 'E-mail, postal or Electronic Data Interchange (EDI)'
+      type: string
+      x-extensible-enum:
+        - EMAIL
+        - POSTAL
+        - EDI
+      example: POSTAL
+    email:
+      type: string
+      nullable: true
+      description: 'E-mail address for invoice delivery. Mandatory if invoice_delivery_type is email.'
+      minLength: 1
+      maxLength: 255
+      example: mycompany@example.com
+  required:
+    - invoice_delivery_type
+Address:
+  type: object
+  properties:
+    contact_person:
+      type: string
+      description: 'Name of the recipient. Mandatory for billing address.'
+      minLength: 3
+      maxLength: 60
+      example: 'Firstname Lastname'
+    street_address:
+      type: string
+      minLength: 1
+      maxLength: 255
+      example: 'Main Street 1'
+    city:
+      type: string
+      minLength: 1
+      maxLength: 60
+      example: Somecity
+    zip:
+      type: string
+      description: 'ZIP code / postal code'
+      minLength: 1
+      maxLength: 90
+      example: ZIP-12345
+    country:
+      type: string
+      minLength: 2
+      maxLength: 2
+      example: FI
+      description: 'Country''s ISO-3166-1 2-character shortcode string'
+    state:
+      type: string
+      nullable: true
+      minLength: 4
+      maxLength: 6
+      example: FI-16
+      description: 'State''s / province''s ISO-3166-2 shortcode string'
+    phone_number:
+      type: string
+      nullable: true
+      maxLength: 50
+      example: +999-12-34567
+  required:
+    - street_address
+    - city
+    - zip
+    - country
+EnterpriseGroupWrite:
+  type: object
+  properties:
+    companies:
+      type: array
+      description: "dcpIds of companies to be in the enterprise group.\n"
+      items:
+        type: integer
+        format: int64
+  required:
+    - companies
+EnterpriseGroupUpdate:
+  allOf:
+    - $ref: '#/components/schemas/EnterpriseGroupWrite'
+EnterpriseGroupRead:
+  type: object
+  properties:
+    group_id:
+      type: string
+      description: "group ID of the enterprise group."
+      minLength: 1
+      maxLength: 255
+      example: 0.1
+    parent_group_id:
+      type: string
+      description: "group ID of the parent."
+      minLength: 1
+      maxLength: 255
+      example: 0.1
+    enterprise_group_type:
+      description: 'ADVANCED_RESELLER, CONTROLLED_RESELLER or ENTERPRISE'
+      type: string
+      x-extensible-enum:
+        - ADVANCED_RESELLER
+        - CONTROLLED_RESELLER
+        - ENTERPRISE
+      example: ENTERPRISE
+    lead_organization:
+      type: string
+      description: "ID of the lead organization."
+      minLength: 1
+      maxLength: 255
+      example: 1.2.3.44
+    companies:
+      type: array
+      description: "The list of companies within the enterprise group.\n"
+      items:
+        $ref: '#/components/schemas/EnterpriseRead'
+EnterpriseGroupDetail:
+  allOf:
+    - $ref: '#/components/schemas/EnterpriseGroupRead'
+NetworkGroupsRead:
+  type: object
+  properties:
+    network_groups:
+      type: array
+      maxItems: 100
+      items:
+        $ref: '#/components/schemas/NetworkGroupRead'
+NetworkGroupRead:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+SimSpecificationsRead:
+  type: object
+  properties:
+    sim_specifications:
+      type: array
+      maxItems: 100
+      items:
+        $ref: '#/components/schemas/SimSpecification'

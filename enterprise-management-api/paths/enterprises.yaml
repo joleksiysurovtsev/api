@@ -1,0 +1,215 @@
+enterprises:
+  get:
+    tags:
+      - Enterprise
+    summary: 'List enterprises.'
+    description: 'Lists all my enterprises.'
+    operationId: getEnterprises
+    parameters:
+      - $ref: '#/components/parameters/tagsParam'
+      - $ref: '#/components/parameters/pageNumber'
+      - $ref: '#/components/parameters/size'
+      - $ref: '#/components/parameters/template_sp_id'
+    responses:
+      '200':
+        description: OK
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnterprisesRead'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/EnterprisesRead'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given. 4XX for client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+  post:
+    tags:
+      - Enterprise
+    summary: 'Create a new enterprise.'
+    description: "Creates a new enterprise. Please note: after successful creation, the enterprise needs to be provisioned by setting the enterprise status to ''READY'' with [POST/enterprises/{enterprise_id}/statuses]()"
+    operationId: createEnterprise
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnterpriseCreate'
+    responses:
+      '201':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/Empty'
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given.\n          4XX for client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+enterprise-by-id:
+  get:
+    tags:
+      - Enterprise
+    summary: 'Get details of an enterprise.'
+    operationId: getEnterpriseDetails
+    parameters:
+      - $ref: '#/components/parameters/enterpriseIdParam'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnterpriseDetail'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/EnterpriseDetail'
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given.\n          Usually 400,403,401,404 or 500.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+  put:
+    tags:
+      - Enterprise
+    summary: 'Update an existing enterprise.'
+    description: "Updates an existing enterprise. Please note: After\n      successful update, the enterprise needs to be provisioned by setting\n      the enterprise status to ''READY'' with\n      [POST/enterprises/{enterprise_id}/statuses]()"
+    operationId: updateEnterprise
+    parameters:
+      - $ref: '#/components/parameters/enterpriseIdParam'
+      - name: If-Match
+        in: header
+        description: 'The RFC 7232 If-Match header field in a request\n          requires the server to only operate on the resource that matches\n          the provided entity-tag. This allows clients express a precondition\n          that prevent the method from being applied if there have been any\n          changes to the resource. See the response headers of GET\n          /enterprises/enterprise_id for details about the entity-tag.'
+        schema:
+          type: string
+          example: "11"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnterpriseUpdate'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnterpriseDetail'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/EnterpriseDetail'
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '412':
+        description: 'Precondition Failed (entity-tag is missing or does not\n          match the latest version)'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given. 4XX for\n          client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+enterprise-statuses:
+  post:
+    tags:
+      - Enterprise
+    summary: 'Change the status of the enterprise'
+    description: "Changes the status of the enterprise by indicating the\n      wanted status.\n\nSupported status changes:\n      <table><tr><td><b>Current status</b><td><b>Wanted status</b>\n      <td><b>Description</b></td></tr><tr><td>draft</td><td>ready</td>\n      <td>Submit a draft version of the enterprise for provisioning.</td></tr>\n      <tr><td>submitted</td><td>ready</td><td>Retry an earlier submit.\n      </td></tr></table>\n\n Afterwards, use [GET/enterprises/{enterprise_id}]() to see the\n      status of the enterprise. If the status does not become ''READY''\n      within a couple of minutes, and provisioning_status is ''FAILURE'',\n      try changing the status again."
+    operationId: changeEnterpriseStatus
+    parameters:
+      - $ref: '#/components/parameters/enterpriseIdParam'
+      - $ref: '#/components/parameters/statusParam'
+      - name: If-Match
+        in: header
+        description: 'The RFC7232 If-Match header field in a request\n          requires the server to only operate on the resource that matches\n          at least one of the provided entity-tags. This allows clients\n          express a precondition that prevent the method from being applied\n          if there have been any changes to the resource.'
+        schema:
+          type: string
+          example: "11"
+    responses:
+      '202':
+        description: 'Request is being processed; use\n          [GET/enterprises/{enterprise_id}]() to get the status of the\n          enterprise.'
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '412':
+        description: 'Precondition Failed (entity-tag is missing or does\n          not match the latest version)'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given.\n          4XX for client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+enterprise-offers:
+  get:
+    tags:
+      - Enterprise
+    summary: 'List the offers belonging to the certain parent enterprise'
+    description: 'Note that parent enterprise type must be specific to which\n      offers can be assigned. For example: Controller Reseller'
+    operationId: getEnterpriseOffers
+    parameters:
+      - $ref: '#/components/parameters/parentEnterpriseIdParam'
+      - $ref: '#/components/parameters/targetEnterpriseId'
+    responses:
+      '200':
+        description: OK
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Offers'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/Offers'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given. 4XX for\n         client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy

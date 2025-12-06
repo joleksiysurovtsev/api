@@ -1,0 +1,489 @@
+SimSpecification:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+    - properties:
+        earliest_delivery_in_days:
+          type: integer
+          nullable: true
+          description: 'Minimum number of days from SIM order to earliest possible delivery.'
+          example: 15
+        order_increment:
+          type: integer
+          nullable: true
+          description: 'The number of SIMs that an order must be incremented with.'
+          example: 10
+        low_order_threshold:
+          type: integer
+          nullable: true
+          description: 'If number of SIMs in SIM order is smaller than\n            the low order threshold, a low order fee may be applied.'
+          example: 5
+        network_group_id:
+          type: integer
+          nullable: true
+          format: int64
+          description: 'Internal ID of the operator''s network group to\n            which this SIM specfication belongs. See output of\n            [GET/enterprises/network-groups]'
+          example: 123
+FormSpecification:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+    - properties:
+        minimum_order_volume:
+          type: integer
+          description: 'Minimum order volume'
+          example: 10
+        order_increment:
+          type: integer
+          description: 'The number of eSIMs that an order must be\n            incremented with.'
+          example: 10
+        sm_sr_endpoint_name:
+          type: string
+          description: 'sm-sr endpoint'
+          example: 4.3.2.1,1.2.3.4
+ProfileSpecification:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+    - properties:
+        number_scheme:
+          type: string
+          description: 'The number scheme id'
+          example: ZZSSCHEME00142,ZZSSCHEME00143
+        price_category:
+          type: integer
+          description: 'The price category'
+          example: 5
+        profile_type:
+          type: string
+          x-extensible-enum:
+            - BOOTSTRAP
+            - VIRTUAL
+            - PROVISIONING
+            - OPERATIONAL
+          description: 'The profile type'
+          example: BOOTSTRAP,VIRTUAL
+SubscriptionPackages:
+  type: object
+  properties:
+    items:
+      type: array
+      maxItems: 255
+      items:
+        $ref: '#/components/schemas/SubscriptionPackage'
+SubscriptionPackageBase:
+  type: object
+  properties:
+    network_group_id:
+      type: integer
+      format: int64
+      description: 'Internal ID of the operator''s network group to which\n        this subscription package belongs. See output of\n        [GET/enterprises/network-groups]'
+      example: 1234
+    commitment_time_in_months:
+      type: integer
+      minimum: 0
+      maximum: 60
+      description: 'Time in months when subscriptions can only be moved to\n        another subscription package or terminated.'
+      example: 36
+    freeze_period_in_months:
+      type: integer
+      minimum: 0
+      maximum: 12
+      description: 'Time in months when subscriptions can only be\n        terminated. May not be longer than commitment period.'
+      example: 6
+    move_in_fee_with_price_profile_change:
+      type: boolean
+      description: 'A fee is charged if the price profile also\n        changes when moving a subscription into this subscription package'
+    move_in_fee_without_price_profile_change:
+      type: boolean
+      description: 'A fee is charged if the price profile remains the\n        same when moving a subscription into this subscription package'
+    5g_enabled:
+      type: boolean
+      description: 'Indicates if this subscription package supports 5G connectivity'
+      default: false
+    tau_timer:
+      description: 'Periodic Tracking Area Update, value in seconds.'
+      type: integer
+      format: int64
+      minimum: 1800
+      maximum: 4294967295
+      example: 3600
+    sms_mo_odb_profile_id:
+      type: integer
+      maximum: 2147483647
+      description: 'SMS firewall Mobile Originating Operator Determined Barrings ID.'
+      example: 678
+    sms_mt_odb_profile_id:
+      type: integer
+      maximum: 2147483647
+      description: 'SMS firewall Mobile Terminating Operator Determined Barrings ID.'
+      example: 789
+    ard:
+      type: integer
+      maximum: 4
+      description: "Access Restriction Data\n\n* 0 = UMTS Terrestrial Radio Access Network (UTRAN) and GSM/EDGE Radio Access Network\n        (GERAN) access allowed\n* 1 = UTRAN access not allowed\n*\n        2 = GERAN access not allowed\n* 3 = 4G access not allowed\n"
+      example: 2
+    rat_restriction:
+      type: array
+      description: "Radio Access Technology (RAT) restriction. Any\n        combination of following is allowed:\n\n* Fallback to 2G\n        restricted\n*  Fallback to 3G restricted\n* LTE access\n        rectricted\n* LTE NB-IoT access restricted\n"
+      maxItems: 4
+      items:
+        type: string
+        x-extensible-enum:
+          - FALLBACK_TO_2G
+          - FALLBACK_TO_3G
+          - LTE_ACCESS
+          - LTE_NBIOT_ACCESS
+          - 5G_ACCESS
+      example: FALLBACK_TO_2G,LTE_ACCESS
+    target_on_pbr_exit:
+      type: string
+      description: 'ID of target subscription package when exiting\n        Parameter Based Registration (PBR, or test mode).'
+      minLength: 6
+      maxLength: 50
+      example: Abc_1234.5-6_SP_222
+    network_access_mode:
+      type: string
+      x-extensible-enum:
+        - BOTH
+        - ONLY_NON_GPRS
+        - ONLY_GPRS
+      description: "Network Access Mode (NAM). Allowed choices: \n\n*\n        both GPRS and non-GPRS networks\n* only non-GPRS network\n*\n        only GPRS network\n"
+    bearer_services:
+      type: array
+      description: "B2C Business to Consumer\n\nCC Consumer\n        Connectivity\n\nCLIP Calling Line Identification\n        Presentation\n\nCSD Circuit Switched Data\n\nGPRS\n        General Packet Radio Service\n\nLTE Long-Term\n        Evolution\n\nMTC Machine Type Communication\n\nSMSMO"
+      maxItems: 8
+      items:
+        type: string
+        x-extensible-enum:
+          - B2C
+          - CC
+          - CLIP
+          - CSD
+          - GPRS
+          - LTE
+          - MTC
+          - SMSMO
+      example: CC,GPRS,LTE
+    supplementary_services:
+      type: array
+      description: "CFB Call Forwarding on mobile subscriber Busy\n\n        CFNR Call Forwarding on mobile subscriber not reachable\n\n        CFNRy Call Forwarding on mobile subscriber no Reply\n\n        CFT\n        Call Forwarding on mobile subscriber not reachable or no Reply\n\n        CLIR Calling Line Identification Restriction\n\n\n        COLP Connected Line Identification Presentation\n\n        COLR Connected Line Identification Restriction\n\n        ECT Explicit Call Transfer\n\n        EMLPP Enhanced Multi-Level Precedence and Pre-emption\n\n        HOLD Call Holding\n\n        IP telephony IP telephony allowed\n\n\n        MPTY Multi-Party Service\n\n        SMS - MO SMS from Mobile Originated\n\n        SMS - MT SMS Mobile Terminated\n\n        SMSCB Cell Broadcast\n\n        VGCS Voice Group Call Service\n\n        VBS Voice Broadcast Service\n\n        VPN Virtual Private Network\n\n        WAP Wireless Application Protocol\n\n        WORQ Warm line operation requested"
+      maxItems: 25
+      items:
+        type: string
+      example: CFB,CFNR,CFNRy,CLIR
+    ussd_barring:
+      type: array
+      description: "MO-Barring of all data (except SMS) and SS except USSD\n        \nMT-Barring of all data (except SMS) and SS except USSD\n        \nMO-Barring for USSD involving a data service for all networks\n        \nMT-Barring for USSD involving a data service for all networks"
+      maxItems: 4
+      items:
+        type: string
+      example: 'MO-Barring of all data (except SMS) and SS except USSD,MO-Barring for USSD involving a data service for all networks'
+    sm_spp_vpn_01:
+      type: boolean
+      default: true
+    sm_spp_vpn_02:
+      type: boolean
+      default: true
+    sm_spp_vpn_03:
+      type: boolean
+      default: true
+    sm_spp_vpn_04:
+      type: boolean
+      default: true
+    sm_spp_vpn_05:
+      type: boolean
+      default: true
+    sm_spp_vpn_06:
+      type: boolean
+      default: true
+    sm_spp_vpn_07:
+      type: boolean
+      default: true
+    sm_spp_vpn_08:
+      type: boolean
+      default: true
+    sm_spp_vpn_09:
+      type: boolean
+      default: true
+    sm_spp_vpn_10:
+      type: boolean
+      default: true
+    sm_spp_vpn_11:
+      type: boolean
+      default: true
+    sm_spp_vpn_12:
+      type: boolean
+      default: true
+    sm_spp_vpn_13:
+      type: boolean
+      default: true
+    sm_spp_vpn_14:
+      type: boolean
+      default: true
+    external_service:
+      description: 'Operator-defined external service which is available\n        for the enterprise.'
+      allOf:
+        - $ref: '#/components/schemas/BasicData'
+SubscriptionPackage:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+    - properties:
+        id:
+          type: string
+          minLength: 6
+          maxLength: 50
+          example: Abc_1234.5-6_SP_101
+        network_group_id:
+          type: integer
+          format: int64
+          description: 'Internal ID of the operator''s network group\n            to which this subscription package belongs. See output of\n            [GET/enterprises/network-groups]'
+          example: 1234
+        price_profile_id:
+          type: string
+          maxLength: 50
+          example: PP123456789
+        price_profile_name:
+          type: string
+          maxLength: 255
+          example: 'My Price Profile'
+        price_plan_name:
+          type: string
+          maxLength: 255
+          example: 'My Price Plan'
+        commitment_time_in_months:
+          type: integer
+          minimum: 0
+          maximum: 60
+          description: 'Time in months when subscriptions can only be\n            moved to another subscription package or terminated.'
+          example: 36
+        freeze_period_in_months:
+          type: integer
+          minimum: 0
+          maximum: 12
+          description: 'Time in months when subscriptions can only be\n            terminated. May not be longer than commitment period.'
+          example: 6
+        move_in_fee_with_price_profile_change:
+          type: boolean
+          description: 'A fee is charged if the price profile also\n            changes when moving a subscription into this subscription package'
+        move_in_fee_without_price_profile_change:
+          type: boolean
+          description: 'A fee is charged if the price profile remains the\n            same when moving a subscription into this subscription package'
+        5g_enabled:
+          type: boolean
+          description: 'Indicates if this subscription package supports 5G connectivity'
+          default: false
+        tau_timer:
+          description: 'Periodic Tracking Area Update, value in seconds.'
+          type: integer
+          format: int64
+          minimum: 1800
+          maximum: 4294967295
+          example: 3600
+        sms_mo_odb_profile_id:
+          type: integer
+          maximum: 2147483647
+          description: 'SMS firewall Mobile Originating Operator Determined Barrings ID.'
+          example: 678
+        sms_mt_odb_profile_id:
+          type: integer
+          maximum: 2147483647
+          description: 'SMS firewall Mobile Terminating Operator Determined Barrings ID.'
+          example: 789
+        ard:
+          type: integer
+          maximum: 4
+          description: "Access Restriction Data\n\n* 0 = UMTS Terrestrial Radio Access Network (UTRAN) and GSM/EDGE Radio Access Network\n            (GERAN) access allowed\n* 1 = UTRAN access not allowed\n*\n            2 = GERAN access not allowed\n* 3 = 4G access not allowed\n"
+          example: 2
+        rat_restriction:
+          type: array
+          description: "Radio Access Technology (RAT) restriction. Any\n            combination of following is allowed:\n\n* Fallback to 2G\n            restricted\n*  Fallback to 3G restricted\n* LTE access\n            rectricted\n* LTE NB-IoT access restricted\n"
+          maxItems: 4
+          items:
+            type: string
+            x-extensible-enum:
+              - FALLBACK_TO_2G
+              - FALLBACK_TO_3G
+              - LTE_ACCESS
+              - LTE_NBIOT_ACCESS
+              - 5G_ACCESS
+          example: FALLBACK_TO_2G,LTE_ACCESS
+        target_on_pbr_exit:
+          type: string
+          description: 'ID of target subscription package when exiting\n            Parameter Based Registration (PBR, or test mode).'
+          minLength: 6
+          maxLength: 50
+          example: Abc_1234.5-6_SP_222
+        network_access_mode:
+          type: string
+          x-extensible-enum:
+            - BOTH
+            - ONLY_NON_GPRS
+            - ONLY_GPRS
+          description: "Network Access Mode (NAM). Allowed choices: \n\n*\n            both GPRS and non-GPRS networks\n* only non-GPRS network\n*\n            only GPRS network\n"
+        bearer_services:
+          type: array
+          description: "B2C Business to Consumer\n\nCC Consumer Connectivity\n\nCLIP Calling Line Identification Presentation\n\nCSD Circuit Switched Data\n\nGPRS General Packet Radio Service\n\nLTE Long-Term Evolution\n\nMTC Machine Type Communication\n\nSMSMO"
+          maxItems: 8
+          items:
+            type: string
+            x-extensible-enum:
+              - B2C
+              - CC
+              - CLIP
+              - CSD
+              - GPRS
+              - LTE
+              - MTC
+              - SMSMO
+          example: CC,GPRS,LTE
+        supplementary_services:
+          type: array
+          description: "CFB Call Forwarding on mobile subscriber Busy\n\n            CFNR Call Forwarding on mobile subscriber not reachable\n\n            CFNRy Call Forwarding on mobile subscriber no Reply\n\n            CFT\n            Call Forwarding on mobile subscriber not reachable or no Reply\n\n            CLIR Calling Line Identification Restriction\n\n\n            COLP Connected Line Identification Presentation\n\n            COLR Connected Line Identification Restriction\n\n            ECT Explicit Call Transfer\n\n            EMLPP Enhanced Multi-Level Precedence and Pre-emption\n\n            HOLD Call Holding\n\n            IP telephony IP telephony allowed\n\n\n            MPTY Multi-Party Service\n\n            SMS - MO SMS from Mobile Originated\n\n            SMS - MT SMS Mobile Terminated\n\n            SMSCB Cell Broadcast\n\n            VGCS Voice Group Call Service\n\n            VBS Voice Broadcast Service\n\n            VPN Virtual Private Network\n\n            WAP Wireless Application Protocol\n\n            WORQ Warm line operation requested"
+          maxItems: 25
+          items:
+            type: string
+          example: CFB,CFNR,CFNRy,CLIR
+        ussd_barring:
+          type: array
+          description: "MO-Barring of all data (except SMS) and SS except USSD\n            \nMT-Barring of all data (except SMS) and SS except USSD\n            \nMO-Barring for USSD involving a data service for all networks\n            \nMT-Barring for USSD involving a data service for all networks"
+          maxItems: 4
+          items:
+            type: string
+          example: 'MO-Barring of all data (except SMS) and SS except USSD,MO-Barring for USSD involving a data service for all networks'
+        sm_spp_vpn_01:
+          type: boolean
+          default: true
+        sm_spp_vpn_02:
+          type: boolean
+          default: true
+        sm_spp_vpn_03:
+          type: boolean
+          default: true
+        sm_spp_vpn_04:
+          type: boolean
+          default: true
+        sm_spp_vpn_05:
+          type: boolean
+          default: true
+        sm_spp_vpn_06:
+          type: boolean
+          default: true
+        sm_spp_vpn_07:
+          type: boolean
+          default: true
+        sm_spp_vpn_08:
+          type: boolean
+          default: true
+        sm_spp_vpn_09:
+          type: boolean
+          default: true
+        sm_spp_vpn_10:
+          type: boolean
+          default: true
+        sm_spp_vpn_11:
+          type: boolean
+          default: true
+        sm_spp_vpn_12:
+          type: boolean
+          default: true
+        sm_spp_vpn_13:
+          type: boolean
+          default: true
+        sm_spp_vpn_14:
+          type: boolean
+          default: true
+        external_service:
+          description: 'Operator-defined external service which is available\n            for the enterprise.'
+          allOf:
+            - $ref: '#/components/schemas/BasicData'
+Offers:
+  type: object
+  properties:
+    offers:
+      type: array
+      maxItems: 50
+      items:
+        $ref: '#/components/schemas/Offer'
+Offer:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+    - properties:
+        sim_specifications:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/SimSpecification'
+        form_specifications:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/FormSpecification'
+        profile_specifications:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ProfileSpecification'
+        network_groups:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/BasicData'
+        sp_templates:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/TemplateSubscriptionPackage'
+        price:
+          $ref: '#/components/schemas/price'
+        order_limit:
+          type: integer
+          format: int64
+        tsp_price_profile_linkage:
+          $ref: '#/components/schemas/TpsPriceMap'
+price:
+  type: object
+  properties:
+    plan_id:
+      type: string
+      maxLength: 50
+      example: PP123456789
+    description:
+      type: string
+      nullable: true
+      maxLength: 255
+      example: 'My Price Highlights'
+    profile_ids:
+      type: string
+      maxLength: 255
+      example: 'profileid1,profileid2'
+    plan_name:
+      type: string
+      maxLength: 255
+      example: 'My Price Plan'
+TpsPriceMap:
+  type: object
+  additionalProperties:
+    type: string
+    description: 'Mapping of SP Template name to Price Profile Name'
+  example:
+    TPS Example-1: 'Example Price Profile Name'
+    TPS Example-2: 'Example Price Profile Name'
+TemplateSubscriptionPackage:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+    - $ref: '#/components/schemas/SubscriptionPackageBase'
+CamelProfile:
+  type: object
+  allOf:
+    - $ref: '#/components/schemas/BasicData'
+    - properties:
+        camel_profile_id:
+          type: integer
+          maximum: 8160
+          example: 5005
+      required:
+        - camel_profile_id

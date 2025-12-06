@@ -1,0 +1,30 @@
+network-groups:
+  get:
+    tags:
+      - Network group
+    summary: 'List network groups.'
+    description: 'List all network groups the user is allowed to view.'
+    operationId: getNetworkGroups
+    responses:
+      '200':
+        description: OK
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkGroupsRead'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/NetworkGroupsRead'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given. 4XX for\n            client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_view_resources

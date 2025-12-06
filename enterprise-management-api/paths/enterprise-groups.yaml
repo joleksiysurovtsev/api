@@ -1,0 +1,76 @@
+enterprise-group-by-id:
+  get:
+    tags:
+      - EnterpriseGroup
+    summary: 'Get details of an enterprise group.'
+    operationId: getEnterpriseGroupDetails
+    parameters:
+      - $ref: '#/components/parameters/enterpriseGroupIdParam'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnterpriseGroupDetail'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/EnterpriseGroupDetail'
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given.\n          Usually 400,403,401,404 or 500.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_view_enterprise_groups
+  put:
+    tags:
+      - EnterpriseGroup
+    summary: 'Update an existing enterprise group.'
+    description: "Updates an existing enterprise group."
+    operationId: updateEnterpriseGroup
+    parameters:
+      - $ref: '#/components/parameters/enterpriseGroupIdParam'
+      - name: If-Match
+        in: header
+        description: 'The RFC 7232 If-Match header field in a request\n          requires the server to only operate on the resource that matches\n          the provided entity-tag. This allows clients express a precondition\n          that prevent the method from being applied if there have been any\n          changes to the resource. See the response headers of GET\n          /enterprises/enterprise_id for details about the entity-tag.'
+        schema:
+          type: string
+          example: "11"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnterpriseGroupUpdate'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnterpriseGroupDetail'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/EnterpriseGroupDetail'
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '412':
+        description: 'Precondition Failed (entity-tag is missing or does not match the latest version)'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given.\n          4XX for client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+          - css_manage_enterprise_groups

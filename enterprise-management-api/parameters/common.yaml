@@ -1,0 +1,103 @@
+enterpriseIdParam:
+  in: path
+  name: enterprise_id
+  description: 'The id of the requested enterprise. May be either\n    organizationID or the deprecated customerNo.'
+  required: true
+  schema:
+    type: string
+    minLength: 3
+    maxLength: 255
+    example: 1.2.3.44
+parentEnterpriseIdParam:
+  in: path
+  name: parent_enterprise_id
+  description: 'The id of the requested parent enterprise.May be either\n    organizationID or the deprecated customerNo.'
+  required: true
+  schema:
+    type: string
+    minLength: 3
+    maxLength: 255
+    example: 1.2.3.44
+tspIdQuery:
+  in: query
+  name: subscription_package_template_id
+  description: 'The id of the subscription package template'
+  required: true
+  schema:
+    type: integer
+    format: int64
+tagsParam:
+  in: query
+  name: tags
+  description: "Filter the response based on tags. Matching is exact and\n    case sensitive. If multiple tags are applied only resources matching\n    all filters will be returned (logical 'AND')\n"
+  schema:
+    type: string
+  example: 'business:finance'
+statusParam:
+  in: query
+  name: enterprise_status
+  description: 'The status of an enterprise.'
+  required: true
+  schema:
+    type: string
+    x-extensible-enum:
+      - READY
+    default: 'READY'
+    example: 'READY'
+pageNumber:
+  in: query
+  name: page_number
+  description: 'Page number to display list of enterprises'
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 99999
+    example: 1
+    default: 1
+size:
+  in: query
+  name: size
+  description: 'Number of enterprises to be displayed on a page'
+  schema:
+    type: integer
+    minimum: 0
+    maximum: 999
+    example: 10
+    default: 100
+template_sp_id:
+  in: query
+  name: template_sp_id
+  description: 'The id(s) of the Subscription Package Template(s)'
+  schema:
+    type: array
+    items:
+      type: integer
+      format: int64
+    example: 528491, 67534
+targetEnterpriseId:
+  in: query
+  name: target_enterprise_id
+  description: 'The id of the targeted enterprise which should be under a\n    parent Enterprise. May be either organizationID or the deprecated\n    customerNo. This Id helps to filter out the results specific to the\n    target Enterprise only'
+  schema:
+    type: string
+    minLength: 3
+    maxLength: 255
+    example: 1.2.3.44
+spIdToDeactivate:
+  in: path
+  name: subscription_package_id
+  description: 'The id of the subscription package to deactivate'
+  required: true
+  schema:
+    type: integer
+    format: int64
+enterpriseGroupIdParam:
+  in: path
+  name: enterprise_group_id
+  description: 'The id of the requested enterprise group.'
+  required: true
+  schema:
+    type: string
+    minLength: 3
+    maxLength: 255
+    example: 1.2.3.44

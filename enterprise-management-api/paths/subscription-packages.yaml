@@ -1,0 +1,111 @@
+enterprise-subscription-packages:
+  get:
+    tags:
+      - Enterprise
+    summary: 'List the subscription packages belonging to my enterprise.'
+    operationId: getEnterpriseSubscriptionPackages
+    parameters:
+      - $ref: '#/components/parameters/enterpriseIdParam'
+    responses:
+      '200':
+        description: OK
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPackages'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPackages'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given. 4XX for\n           client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+  post:
+    tags:
+      - Enterprise
+    summary: 'Create subscription package for my enterprise'
+    description: 'For given enterprise this function creates a subscription package'
+    operationId: createSubscriptionPackage
+    parameters:
+      - $ref: '#/components/parameters/enterpriseIdParam'
+      - $ref: '#/components/parameters/tspIdQuery'
+    responses:
+      '201':
+        description: OK
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given. 4XX for\n            client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_manage_enterprise_hierarchy
+sim-specifications:
+  get:
+    tags:
+      - SIM specification
+    summary: 'List SIM specifications.'
+    description: 'List all SIM specifications the user is allowed to view.'
+    operationId: getSimSpecifications
+    responses:
+      '200':
+        description: OK
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimSpecificationsRead'
+          application/json;version=2.0.0:
+            schema:
+              $ref: '#/components/schemas/SimSpecificationsRead'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given.4XX for client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_view_resources
+subscription-package-deactivate:
+  post:
+    tags:
+      - Enterprise
+    summary: 'Deactivate the subscription package'
+    description: "Deactivates the subscription package with the given ID"
+    operationId: deactivateSubscriptionPackage
+    parameters:
+      - $ref: '#/components/parameters/spIdToDeactivate'
+    responses:
+      '202':
+        description: 'Request is being processed'
+        allOf:
+          - $ref: '#/components/responses/RateLimitedResponse'
+      '429':
+        $ref: '#/components/responses/429'
+      default:
+        description: 'The standard http error codes will be given.\n        4XX for client errors and 5XX for server errors.'
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+    security:
+      - oauth2:
+          - css_deprecate_subscription_package
